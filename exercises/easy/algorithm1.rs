@@ -69,15 +69,44 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+
+    // TODO
+    pub fn merge(list_a: LinkedList<T>, list_b: LinkedList<T>) -> Self
+    where
+        T: Ord,
+    {
+        let mut result = LinkedList::new();
+
+        let mut current_a = list_a.start;
+        let mut current_b = list_b.start;
+
+        while let (Some(node_a), Some(node_b)) = (current_a, current_b) {
+            let node_a_ptr = unsafe { node_a.as_ptr() };
+            let node_b_ptr = unsafe { node_b.as_ptr() };
+
+            if unsafe { (*node_a_ptr).val <= (*node_b_ptr).val } {
+                result.add(unsafe { (*node_a_ptr).val });
+                current_a = unsafe { (*node_a_ptr).next };
+            } else {
+                result.add(unsafe { (*node_b_ptr).val });
+                current_b = unsafe { (*node_b_ptr).next };
+            }
         }
-	}
+
+        while let Some(node_a) = current_a {
+            let node_a_ptr = unsafe { node_a.as_ptr() };
+            result.add(unsafe { (*node_a_ptr).val });
+            current_a = unsafe { (*node_a_ptr).next };
+        }
+
+        while let Some(node_b) = current_b {
+            let node_b_ptr = unsafe { node_b.as_ptr() };
+            result.add(unsafe { (*node_b_ptr).val });
+            current_b = unsafe { (*node_b_ptr).next };
+        }
+
+        result
+    }
 }
 
 impl<T> Display for LinkedList<T>
