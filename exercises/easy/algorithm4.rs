@@ -1,8 +1,7 @@
 /*
-	binary_search tree
-	This problem requires you to implement a basic interface for a binary tree
+    binary_search tree
+    This problem requires you to implement a basic interface for a binary tree
 */
-
 
 use std::cmp::Ordering;
 use std::fmt::Debug;
@@ -37,13 +36,34 @@ where
             right: None,
         }
     }
+
+    // Insert a node into the tree
+    fn insert(&mut self, value: T) {
+        //TODO
+        match value.cmp(&self.value) {
+            Ordering::Less => {
+                if let Some(ref mut left) = self.left {
+                    left.insert(value);
+                } else {
+                    self.left = Some(Box::new(TreeNode::new(value)));
+                }
+            }
+            Ordering::Greater => {
+                if let Some(ref mut right) = self.right {
+                    right.insert(value);
+                } else {
+                    self.right = Some(Box::new(TreeNode::new(value)));
+                }
+            }
+            Ordering::Equal => {}
+        }
+    }
 }
 
 impl<T> BinarySearchTree<T>
 where
     T: Ord,
 {
-
     fn new() -> Self {
         BinarySearchTree { root: None }
     }
@@ -51,25 +71,28 @@ where
     // Insert a value into the BST
     fn insert(&mut self, value: T) {
         //TODO
+        match self.root {
+            Some(ref mut root) => root.insert(value),
+            None => {
+                self.root = Some(Box::new(TreeNode::new(value)));
+            }
+        }
     }
 
     // Search for a value in the BST
     fn search(&self, value: T) -> bool {
         //TODO
-        true
+        let mut current = self.root.as_ref();
+        while let Some(node) = current {
+            match value.cmp(&node.value) {
+                Ordering::Less => current = node.left.as_ref(),
+                Ordering::Greater => current = node.right.as_ref(),
+                Ordering::Equal => return true,
+            }
+        }
+        false
     }
 }
-
-impl<T> TreeNode<T>
-where
-    T: Ord,
-{
-    // Insert a node into the tree
-    fn insert(&mut self, value: T) {
-        //TODO
-    }
-}
-
 
 #[cfg(test)]
 mod tests {
@@ -121,6 +144,4 @@ mod tests {
             None => panic!("Root should not be None after insertion"),
         }
     }
-}    
-
-
+}
