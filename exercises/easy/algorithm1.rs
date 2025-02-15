@@ -69,15 +69,60 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+    pub fn merge(mut list_a: LinkedList<T>, mut list_b: LinkedList<T>) -> Self
+    where
+        T: Ord, 
+        {
+        let mut merged_list = LinkedList::new();
+        let mut current_a = list_a.start;
+        let mut current_b = list_b.start;
+
+        while current_a.is_some() && current_b.is_some() {
+            let node_a = unsafe { current_a.unwrap().as_ref() };
+            let node_b = unsafe { current_b.unwrap().as_ref() };
+
+            if node_a.val <= node_b.val {
+                let next_a = node_a.next;
+                merged_list.append_node(current_a.take().unwrap());
+                current_a = next_a;
+            } else {
+                let next_b = node_b.next;
+                merged_list.append_node(current_b.take().unwrap());
+                current_b = next_b;
+            }
         }
-	}
+
+        while current_a.is_some() {
+            let next_a = unsafe { current_a.unwrap().as_ref().next };
+            merged_list.append_node(current_a.take().unwrap());
+            current_a = next_a;
+        }
+
+        while current_b.is_some() {
+            let next_b = unsafe { current_b.unwrap().as_ref().next };
+            merged_list.append_node(current_b.take().unwrap());
+            current_b = next_b;
+        }
+
+        list_a.start = None;
+        list_a.end = None;
+        list_b.start = None;
+        list_b.end = None;
+
+        merged_list
+    }
+
+    fn append_node(&mut self, node_ptr: NonNull<Node<T>>) {
+        unsafe {
+            (*node_ptr.as_ptr()).next = None;
+            match self.end {
+                None => self.start = Some(node_ptr),
+                Some(end_ptr) => (*end_ptr.as_ptr()).next = Some(node_ptr),
+            }
+            self.end = Some(node_ptr);
+            self.length += 1;
+        }
+    }
 }
 
 impl<T> Display for LinkedList<T>
